@@ -1,26 +1,39 @@
-import PropTypes from "prop-types";
-// import cssContList from "./ContactList.module.css";
+import React from 'react';
+import PropTypes from 'prop-types';
+import styles from 'components/ContactList/ContactList.module.css'
+import { useDispatch, useSelector } from 'react-redux';
+import { selectVisibleContacts } from 'redux/selectors';
+import { deleteContact} from 'redux/contactsApi';
 
-export function ContactList ({contacts, filterValue, getContacts, deleteContact}) {
-    return(<>
-        {filterValue === "" ? contacts.map(el => (
-                <li key={el.id}>
-                    <p>{el.name} - {el.number}</p>
-                    <button data-id={el.id} type="button" onClick={deleteContact}>delete</button>
-                </li>
-            )): getContacts.map(el => (
-                    <li key={el.id}>
-                        <p>{el.name}{el.number}</p>
-                        <button data-id={el.id} type="button" onClick={deleteContact}>delete</button>
-                    </li>
-            ))}
-    </>)
+import { Button} from '@chakra-ui/react'
 
+const ContactList =()=>{
+const dispatch = useDispatch()
+const visibleContact = useSelector(selectVisibleContacts);
+  
+return(
+    <>
+    {visibleContact.length > 0 &&
+       (
+         <ul className={styles.list}>
+        {visibleContact.map(({id, name, number}) => (<li key={id} className={styles.item}>
+       {name}:<span>{number}</span> 
+       <Button   border='2px'
+  borderColor='#276749'   color='#276749' variant='outline'  type="submit"onClick={()=> dispatch(deleteContact(id))} className={styles.button}>Delete
+  </Button>
+        </li> )) }
+    </ul>
+ )} 
+    
+    </>
+  
+)
 }
-                    
 
-ContactList.propTypes = {
-    filterValue: PropTypes.string,
-    getContacts: PropTypes.array,
-    deleteContact: PropTypes.func,
+ContactList.propTypes ={
+     visibleContact: PropTypes.arrayOf(PropTypes.object),
+    onDelete: PropTypes.func.isRequired,
 }
+export default ContactList
+
+

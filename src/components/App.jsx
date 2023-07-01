@@ -1,36 +1,45 @@
 
-import { ContactsPage } from "Page/ContactsPage";
-import { Route, Routes } from "react-router-dom";
-import { Header } from "./Header/Header";
-import { LoginPage } from "Page/LoginPage";
-import { RegisterPage } from "Page/RegisterPage";
-import { PublicRoute } from "./PublicRoute/PublicRoute";
-import { PrivateRoute } from "./PrivateRoute/PrivateRoute ";
-import { Home } from "Page/Home";
+import React, { lazy, useEffect } from 'react';
+import { Route, Routes } from 'react-router-dom';
+import SharedLayout from './SharedLayout/SharedLayout';
+import { PublicRoute } from './PublicRoute';
+import { PrivateRoute } from './PrivateRoute';
+import { useDispatch } from 'react-redux';
+import { refreshUser } from 'redux/auth/Operations';
+import { useAuth } from './Hooks/useAuth';
+import Loader from './Loader/Loader';
 
-export function App () {
-    return (
-        <Routes>
-            <Route path="/" element={<Header />}>
+const HomePage = lazy(() => import('../Pages/Home'));
+const RegisterPage = lazy(() => import('../Pages/Register'));
+const LoginPage = lazy(() => import('../Pages/Login'));
+const ContactsPage = lazy(() => import('../Pages/Contacts'));
 
-                <Route index element={<Home />}/>
+export default function App () {
+     const dispatch = useDispatch();
+  const { isRefreshing } = useAuth();
 
-                <Route path="contacts" element={<PrivateRoute>
-                    <ContactsPage />
-                </PrivateRoute>}/>
+  useEffect(() => {
+    dispatch(refreshUser());
+  }, [dispatch]);
 
-            </Route>
+  return isRefreshing ? (
+    <Loader />
+  ) : (
+     <Routes>
+     <Route path="/" element={<SharedLayout />}>
+     <Route index element={<HomePage />} />
+       <Route path="/register" element= {<PublicRoute redirectTo='/contacts' component= {<RegisterPage />}/>} />
+       <Route path="/login" element= {<PublicRoute redirectTo='/contacts' component= {<LoginPage />}/>} />
+       <Route path="/contacts" element= {<PrivateRoute redirectTo='/login' component= {<ContactsPage />}/>} >
+       </Route>
+       </Route>
+     </Routes>
+    
+    
+   )}
 
-            <Route path="login" element={<PublicRoute>
-                    <LoginPage />
-            </PublicRoute>}/>
 
-            <Route path="register" element={<PublicRoute>
-                    <RegisterPage />
-            </PublicRoute>}/>
-        </Routes>
 
-        
-    )
 
-}
+
+
